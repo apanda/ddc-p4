@@ -1,0 +1,67 @@
+pd-ddc
+
+pd fib add_entry do_fib ethernet_dstAddr 0x3cfdfead82e0 action_destination 0
+pd fib set_default_action _drop
+
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 192 action_linkindex 0
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 128 action_linkindex 1
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 129 action_linkindex 2
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 130 action_linkindex 3
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 131 action_linkindex 4
+pd compute_linkindex add_entry do_compute_linkindex ig_intr_md_ingress_port 144 action_linkindex 5
+
+
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 192 action_linkindex 0
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 128 action_linkindex 1
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 129 action_linkindex 2
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 130 action_linkindex 3
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 131 action_linkindex 4
+pd compute_linkdown_linkindex add_entry do_compute_linkdown_linkindex linkdown_port 144 action_linkindex 5
+
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 0 action_bitmask 0xFFFFFFFE
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 1 action_bitmask 0xFFFFFFFD
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 2 action_bitmask 0xFFFFFFFB
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 3 action_bitmask 0xFFFFFFF7
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 4 action_bitmask 0xFFFFFFEF
+pd compute_bitmask add_entry do_compute_bitmask mdata_linkindex 5 action_bitmask 0xFFFFFFDF
+
+
+pd compute_linkindex add_entry fib_update ig_intr_md_ingress_port 196
+pd compute_linkindex set_default_action no_mapping
+
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 0 action_bitmask 0x00000001
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 1 action_bitmask 0x00000002
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 2 action_bitmask 0x00000004
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 3 action_bitmask 0x00000008
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 4 action_bitmask 0x00000010
+pd load_direction_for_linkindex add_entry do_load_direction_for_linkindex mdata_linkindex 5 action_bitmask 0x00000020
+
+pd load_packet_seq add_entry do_load_packet_seq ipv4_flags 0x4 ipv4_flags_mask 0x4 priority 1 action_packet_seq 1
+pd load_packet_seq add_entry do_load_packet_seq ipv4_flags 0x0 ipv4_flags_mask 0x4 priority 1 action_packet_seq 0
+
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000001 mdata_out_links_mask 0x00000001 priority 1 action_egress_spec 192
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000002 mdata_out_links_mask 0x00000002 priority 1 action_egress_spec 128
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000004 mdata_out_links_mask 0x00000004 priority 1 action_egress_spec 129
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000008 mdata_out_links_mask 0x00000008 priority 1 action_egress_spec 130
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000010 mdata_out_links_mask 0x00000010 priority 1 action_egress_spec 131
+pd choose_outlink add_entry do_choose_outlink mdata_out_links 0x00000020 mdata_out_links_mask 0x00000020 priority 1 action_egress_spec 144
+
+
+pd clone_pkt set_default_action nop
+pd clone_pkt add_entry do_clone_pkt mdata_direction_update 1 action_session_id 1
+
+pd efib add_entry do_efib ethernet_dstAddr 0x3cfdfead82e0 action_destination 0
+
+pd update_direction_departure add_entry do_incr_update_direction_departure mdata_direction_update 1
+pd update_direction_departure add_entry do_update_direction_departure mdata_direction_update 2
+
+pd recirc_ddc set_default_action _drop
+pd recirc_linkdown set_default_action _drop
+
+pd recirc_ddc add_entry do_recirc_to_1 ig_intr_md_ingress_port 0x7f ig_intr_md_ingress_port_mask 0x80 ddc_pipe_state 0 priority 1
+pd recirc_ddc add_entry do_recirc_to_0 ig_intr_md_ingress_port 0xff ig_intr_md_ingress_port_mask 0x80 ddc_pipe_state 0 priority 1
+
+pd recirc_linkdown add_entry do_recirc_to_1 ig_intr_md_ingress_port 0x7f ig_intr_md_ingress_port_mask 0x80 linkdown_pipe_state 0 priority 1
+pd recirc_linkdown add_entry do_recirc_to_0 ig_intr_md_ingress_port 0xff ig_intr_md_ingress_port_mask 0x80 linkdown_pipe_state 0 priority 1
+
+exit
